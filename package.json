@@ -10,15 +10,12 @@
 		"Other"
 	],
 	"activationEvents": [
+		"*",
 		"onCommand:vscode-nvm.helloWorld"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
-			{
-				"command": "vscode-nvm.helloWorld",
-				"title": "Hello World"
-			}
 		]
 	},
 	"scripts": {
