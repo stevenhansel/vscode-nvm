@@ -16,6 +16,21 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
+			{
+				"command": "vscode-nvm.addNodeVersion",
+				"title": "Add Node Version",
+				"category": "VSCODE-NVM"
+			},
+			{
+				"command": "vscode-nvm.switchNodeVersion",
+				"title": "Switch Node Version",
+				"category": "VSCODE-NVM"
+			},
+			{
+				"command": "vscode-nvm.deleteNodeVersion",
+				"title": "Delete Node Version",
+				"category": "VSCODE-NVM"
+			}
 		]
 	},
 	"scripts": {

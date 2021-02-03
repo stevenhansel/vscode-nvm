@@ -4,6 +4,32 @@ let nvmBarItem: vscode.StatusBarItem;
 
 export function activate({ subscriptions }: vscode.ExtensionContext) {
 
+	let commands: { [id: string]: () => void } = {
+		addNodeVersion: () => {
+			console.log("adding node version");
+		},
+		switchNodeVersion: () => {
+			console.log("switching node version");
+		},
+		deleteNodeVersion: () => {
+			console.log("deleting node version");
+		}
+	};
+
+	// functions for toggling web views
+	subscriptions.push(vscode.commands.registerCommand("vscode-nvm.addNodeVersion", () => {
+		commands["addNodeVersion"]();
+	}));
+
+	subscriptions.push(vscode.commands.registerCommand("vscode-nvm.switchNodeVersion", () => {
+		commands["switchNodeVersion"]();
+	}));
+
+	subscriptions.push(vscode.commands.registerCommand("vscode-nvm.deleteNodeVersion", () => {
+		commands["deleteNodeVersion"]();
+	}));
+
+	// subscriptions.push(disposable);
 	subscriptions.push(vscode.commands.registerCommand("vscode-nvm.showPalette", () => {
 		vscode.window.showQuickPick(["Add node version", "Switch node version", "Delete node version"], {
 			placeHolder: "Select",
