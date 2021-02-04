@@ -1,5 +1,7 @@
 import { promisify } from 'util';
 import * as child from 'child_process';
+import * as vscode from "vscode";
+
 const exec = promisify(child.exec);
 
 const versionPattern = /(v\d\d\.\d\d\.\d)/g;
@@ -8,18 +10,45 @@ const installedVersionPattern = /(v\d+\.\d+\.\d+)|(system)/g;
 export class NVM {
   versions: string[] = [];
   installedVersions: string[] = [];
+  githubLink = "https://github.com/nvm-sh/nvm";
 
   constructor() {
     this.initialize();
   }
 
   async initialize() {
+    if (!(await this.isNvmInstalled())) {
+      const action = 'Install';
+      vscode.window
+        .showInformationMessage(
+          'nvm is not installed in your local machine, please install nvm',
+          action
+        )
+        .then((selectedAction) => {
+          if (selectedAction === action) {
+            vscode.env.openExternal(vscode.Uri.parse(this.githubLink));
+          }
+        });
+    }
+
     this.versions = await this.fetchAvailableVersions();
     this.installedVersions = await this.fetchInstalledVersions();
   }
 
   nvmCommandBuilder = (command: string): string =>
     `source ~/.nvm/nvm.sh && ${command}`;
+
+  async isNvmInstalled(): Promise<boolean> {
+    const command = this.nvmCommandBuilder('nvm');
+    try {
+      await exec(command);
+    } catch (err) {
+      return false;
+    }
+
+    return true;
+    
+  }
 
   async fetchAvailableVersions(): Promise<string[]> {
     if (this.versions.length > 0) {
@@ -56,7 +85,7 @@ export class NVM {
 
       let parsed = stdout.match(installedVersionPattern);
       if (parsed) {
-        parsed.splice(parsed.indexOf("system"), Number.MAX_VALUE);
+        parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
       }
 
       return !!parsed ? parsed : [];
@@ -68,7 +97,7 @@ export class NVM {
     if (!validate) {
       return false;
     }
-    
+
     const command = this.nvmCommandBuilder(`nvm alias default ${version}`);
     const { stdout } = await exec(command);
     return true;
