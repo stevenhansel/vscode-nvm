@@ -8,6 +8,7 @@ const installedVersionPattern = /(v\d+\.\d+\.\d+)|(system)/g;
 export class NVM {
   versions: string[] = [];
   installedVersions: string[] = [];
+  githubLink = "https://github.com/nvm-sh/nvm";
 
   constructor() {
     this.initialize();
@@ -20,6 +21,12 @@ export class NVM {
 
   nvmCommandBuilder = (command: string): string =>
     `source ~/.nvm/nvm.sh && ${command}`;
+
+  async isNvmInstalled(): Promise<boolean> {
+    const command = this.nvmCommandBuilder('nvm');
+    const { stderr } = await exec(command);
+    return !!stderr;
+  }
 
   async fetchAvailableVersions(): Promise<string[]> {
     if (this.versions.length > 0) {
@@ -56,7 +63,7 @@ export class NVM {
 
       let parsed = stdout.match(installedVersionPattern);
       if (parsed) {
-        parsed.splice(parsed.indexOf("system"), Number.MAX_VALUE);
+        parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
       }
 
       return !!parsed ? parsed : [];
@@ -68,7 +75,7 @@ export class NVM {
     if (!validate) {
       return false;
     }
-    
+
     const command = this.nvmCommandBuilder(`nvm alias default ${version}`);
     const { stdout } = await exec(command);
     return true;
