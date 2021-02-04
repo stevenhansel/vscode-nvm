@@ -1,5 +1,7 @@
 import { promisify } from 'util';
 import * as child from 'child_process';
+import * as vscode from "vscode";
+
 const exec = promisify(child.exec);
 
 const versionPattern = /(v\d\d\.\d\d\.\d)/g;
@@ -15,6 +17,20 @@ export class NVM {
   }
 
   async initialize() {
+    if (!(await this.isNvmInstalled())) {
+      const action = 'Install';
+      vscode.window
+        .showInformationMessage(
+          'nvm is not installed in your local machine, please install nvm',
+          action
+        )
+        .then((selectedAction) => {
+          if (selectedAction === action) {
+            vscode.env.openExternal(vscode.Uri.parse(this.githubLink));
+          }
+        });
+    }
+
     this.versions = await this.fetchAvailableVersions();
     this.installedVersions = await this.fetchInstalledVersions();
   }
@@ -24,8 +40,14 @@ export class NVM {
 
   async isNvmInstalled(): Promise<boolean> {
     const command = this.nvmCommandBuilder('nvm');
-    const { stderr } = await exec(command);
-    return !!stderr;
+    try {
+      await exec(command);
+    } catch (err) {
+      return false;
+    }
+
+    return true;
+    
   }
 
   async fetchAvailableVersions(): Promise<string[]> {

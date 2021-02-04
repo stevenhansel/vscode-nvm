@@ -2,26 +2,12 @@ import { verify } from 'crypto';
 import { version } from 'process';
 import * as vscode from 'vscode';
 import { NVM } from './utils/nvm';
-const nvm = new NVM();
 
+const nvm = new NVM();
 let nvmBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
   const { subscriptions } = context;
-
-  if (!nvm.isNvmInstalled()) {
-    const action = 'Install';
-    vscode.window
-      .showInformationMessage(
-        'nvm is not installed in your local machine, please install nvm',
-        action
-      )
-      .then((selectedAction) => {
-        if (selectedAction === action) {
-          vscode.env.openExternal(vscode.Uri.parse(nvm.githubLink));
-        }
-      });
-  }
 
   let commands: { [id: string]: () => void } = {
     addNodeVersion: async () => {
