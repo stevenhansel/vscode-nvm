@@ -5,54 +5,87 @@ import { NVM } from './utils/nvm';
 
 const nvm = new NVM();
 let nvmBarItem: vscode.StatusBarItem;
+let deleteQuickPick: vscode.QuickPick<vscode.QuickPickItem>;
 
 export function activate(context: vscode.ExtensionContext) {
-  const { subscriptions } = context;
 
+
+
+  const { subscriptions } = context;
   let commands: { [id: string]: () => void } = {
     addNodeVersion: async () => {
       const quickPick = vscode.window.createQuickPick();
       const nodeVersions = await nvm.fetchAvailableVersions();
 
-      quickPick.items = nodeVersions.map((version) => ({ label: version }));
-      quickPick.onDidChangeSelection(async (selected) => {
-        const [item] = selected;
-        const { label: version } = item;
-        vscode.window.showInformationMessage(`Installing node ${version}`);
-        const response = await nvm.installNewVersion(version as any);
-        if (!response) {
-          vscode.window.showInformationMessage(`Enter a valid version!`);
-        } else {
-          vscode.window.showInformationMessage(
-            `Installed ${version} to your local nvm`
-          );
-        }
-      });
-      quickPick.show();
-    },
-    switchNodeVersion: async () => {
-      const quickPick = vscode.window.createQuickPick();
-      const nodeVersions = await nvm.fetchInstalledVersions();
 
-      quickPick.items = nodeVersions.map((version) => ({ label: version }));
-      quickPick.title = 'Swtich Node Version';
-      quickPick.onDidChangeSelection(async (selected) => {
+      let commands: { [id: string]: () => void } = {
+        addNodeVersion: async () => {
+          const quickPick = vscode.window.createQuickPick();
+          const nodeVersions = await nvm.fetchAvailableVersions();
+
+          quickPick.items = nodeVersions.map((version) => ({ label: version }));
+          quickPick.onDidChangeSelection(async (selected) => {
+            const [item] = selected;
+            const { label: version } = item;
+            vscode.window.showInformationMessage(`Installing node ${version}`);
+            const response = await nvm.installNewVersion(version as any);
+            if (!response) {
+              vscode.window.showInformationMessage(`Enter a valid version!`);
+            } else {
+              vscode.window.showInformationMessage(
+                `Installed ${version} to your local nvm`
+              );
+            }
+          });
+          quickPick.show();
+        },
+        switchNodeVersion: async () => {
+          const quickPick = vscode.window.createQuickPick();
+          const nodeVersions = await nvm.fetchInstalledVersions();
+
+
+          quickPick.items = nodeVersions.map((version) => ({ label: version }));
+          quickPick.title = 'Swtich Node Version';
+          quickPick.onDidChangeSelection(async (selected) => {
+            const [item] = selected;
+            const { label: version } = item;
+            vscode.window.showInformationMessage(`Switching node ${version}`);
+            const response = await nvm.switchVersion(version as any);
+            if (!response) {
+              vscode.window.showInformationMessage(`Enter a valid version!`);
+            } else {
+              vscode.window.showInformationMessage(
+                `Switched node version to ${version}, Restart vscode for the change to take effect`
+              );
+            }
+          });
+          quickPick.show();
+        },
+
+      };
+    },
+    deleteNodeVersion: async () => {
+      deleteQuickPick = vscode.window.createQuickPick();
+      const nodeVersions = await nvm.fetchInstalledVersions();
+      deleteQuickPick.items = nodeVersions.map((version) => ({ label: version }));
+      deleteQuickPick.title = "Delete Node Version";
+      deleteQuickPick.onDidChangeSelection(async (selected) => {
         const [item] = selected;
         const { label: version } = item;
-        vscode.window.showInformationMessage(`Switching node ${version}`);
-        const response = await nvm.switchVersion(version as any);
+        vscode.window.showInformationMessage(`Deleting node ${version}`);
+        const response = await nvm.deleteVersion(version as any);
         if (!response) {
-          vscode.window.showInformationMessage(`Enter a valid version!`);
+          vscode.window.showInformationMessage(`Error deleting version`);
         } else {
           vscode.window.showInformationMessage(
-            `Switched node version to ${version}, Restart vscode for the change to take effect`
+            `Deleted node version ${version}`
           );
         }
+        const nodeVersions = await nvm.fetchInstalledVersions(true);
+        const ready = nodeVersions.map((version) => ({ label: version }));
+        deleteQuickPick.items = ready;
       });
-      quickPick.show();
-    },
-    deleteNodeVersion: () => {
-      console.log('deleting node version');
+      deleteQuickPick.show();
     },
   };
 
@@ -101,4 +134,4 @@ export function activate(context: vscode.ExtensionContext) {
   subscriptions.push(nvmBarItem);
 }
 
-export function deactivate() {}
+export function deactivate() { }

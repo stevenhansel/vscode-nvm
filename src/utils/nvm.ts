@@ -58,6 +58,7 @@ export class NVM {
       const { stdout } = await exec(command);
 
       const parsed = stdout.match(versionPattern);
+      this.versions = parsed ?? [];
       return !!parsed ? parsed : [];
     }
   }
@@ -76,8 +77,8 @@ export class NVM {
     return true;
   }
 
-  async fetchInstalledVersions(): Promise<string[]> {
-    if (this.installedVersions.length > 0) {
+  async fetchInstalledVersions(fetchNew = false): Promise<string[]> {
+    if (this.installedVersions.length > 0 && fetchNew === false) {
       return this.installedVersions;
     } else {
       const command = this.nvmCommandBuilder('nvm ls');
@@ -88,6 +89,7 @@ export class NVM {
         parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
       }
 
+      this.installedVersions = parsed ?? [];
       return !!parsed ? parsed : [];
     }
   }
@@ -101,5 +103,24 @@ export class NVM {
     const command = this.nvmCommandBuilder(`nvm alias default ${version}`);
     const { stdout } = await exec(command);
     return true;
+  }
+
+  async deleteVersion(version: string): Promise<boolean> {
+    const validate = this.installedVersions.find((v) => v === version);
+
+    if (!validate) {
+      return false;
+    }
+
+    try {
+      const command = this.nvmCommandBuilder(`nvm uninstall ${version}`);
+      const { stdout } = await exec(command);
+      return true;
+    } catch(e) {
+      console.log("There was a problem...");
+      return false;
+
+    }
+   
   }
 }
