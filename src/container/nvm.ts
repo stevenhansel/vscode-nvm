@@ -1,6 +1,6 @@
 import { promisify } from 'util';
 import * as child from 'child_process';
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 const exec = promisify(child.exec);
 
@@ -10,7 +10,7 @@ const installedVersionPattern = /(v\d+\.\d+\.\d+)|(system)/g;
 export class NVM {
   versions: string[] = [];
   installedVersions: string[] = [];
-  githubLink = "https://github.com/nvm-sh/nvm";
+  githubLink = 'https://github.com/nvm-sh/nvm';
 
   constructor() {
     this.initialize();
@@ -40,14 +40,11 @@ export class NVM {
 
   async isNvmInstalled(): Promise<boolean> {
     const command = this.nvmCommandBuilder('nvm');
-    try {
-      await exec(command);
-    } catch (err) {
-      return false;
-    }
-
-    return true;
-    
+    return new Promise((resolve) => {
+      exec(command)
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    });
   }
 
   async fetchAvailableVersions(): Promise<string[]> {
@@ -101,7 +98,7 @@ export class NVM {
     }
 
     const command = this.nvmCommandBuilder(`nvm alias default ${version}`);
-    const { stdout } = await exec(command);
+    await exec(command);
     return true;
   }
 
@@ -114,13 +111,11 @@ export class NVM {
 
     try {
       const command = this.nvmCommandBuilder(`nvm uninstall ${version}`);
-      const { stdout } = await exec(command);
+      await exec(command);
       return true;
-    } catch(e) {
-      console.log("There was a problem...");
+    } catch (e) {
+      console.log('There was a problem...');
       return false;
-
     }
-   
   }
 }
