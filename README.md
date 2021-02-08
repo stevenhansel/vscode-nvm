@@ -23,7 +23,6 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
 
@@ -46,7 +45,7 @@ vscode-nvm
   </p>
 </p>
 
-![GIF Screenshot](https://github.com/ShinteiMai/vscode-nvm/blob/master/images/screenshot.gif)
+![GIF Screenshot](https://raw.githubusercontent.com/ShinteiMai/vscode-nvm/master/docs/screenshot.gif)
 
 <!-- TABLE OF CONTENTS -->
 
@@ -99,7 +98,7 @@ Please refer to the  [nvm documentation](https://github.com/nvm-sh/nvm) to get y
 1. Clone this repository
 
 ```sh
-git clone https://github.com/ShinteiMai/react-pokedex.git
+git clone https://github.com/ShinteiMai/vscode-nvm.git
 ```
 
 2. Install NPM packages
@@ -139,5 +138,3 @@ Distributed under the MIT License. See `LICENSE` for more information.
 [stars-url]: https://github.com/shinteimai/vscode-nvm/stargazers
 [issues-shield]: https://img.shields.io/github/issues/shinteimai/vscode-nvm.svg?style=flat-square
 [issues-url]: https://github.com/shinteimai/vscode-nvm/issues
-[license-shield]: https://img.shields.io/github/license/shinteimai/vscode-nvm.svg?style=flat-square
-[license-url]: https://github.com/shinteimai/vscode-nvm/blob/master/LICENSE
