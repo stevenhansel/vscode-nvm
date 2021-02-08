@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { NVM } from '../container/nvm';
 
-export class NVMProvider implements vscode.TreeDataProvider<Versions> {
+export class InstalledNodeVersionsProvider implements vscode.TreeDataProvider<Versions> {
   constructor(private readonly nvm = new NVM()) {}
 
   getTreeItem(element: Versions): vscode.TreeItem {
@@ -10,10 +9,10 @@ export class NVMProvider implements vscode.TreeDataProvider<Versions> {
   }
 
   getChildren(element?: Versions): Thenable<Versions[]> {
-    return Promise.resolve(this.getNodeVersions());
+    return Promise.resolve(this.getInstalledNodeVersions());
   }
 
-  private async getNodeVersions(): Promise<Versions[]> {
+  private async getInstalledNodeVersions(): Promise<Versions[]> {
     const items: Versions[] = [];
     const versions = await this.nvm.fetchInstalledVersions();
     for (const version of versions) {

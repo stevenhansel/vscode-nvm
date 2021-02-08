@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { NVMProvider } from './components/nvmView';
+import { AvailableNodeVersionsProvider } from './components/availableNodeVersionsView';
+import { InstalledNodeVersionsProvider } from './components/installedNodeVersionsView';
 import { NVM } from './container/nvm';
 
 const nvm = new NVM();
@@ -10,9 +11,20 @@ export function activate(context: vscode.ExtensionContext) {
   const { subscriptions } = context;
 
   /** Tree Provider for NVM Explorer aka Sidebar for NVM  */
-  vscode.window.registerTreeDataProvider('nvm', new NVMProvider());
-  vscode.window.createTreeView('nvm', {
-    treeDataProvider: new NVMProvider(),
+  vscode.window.registerTreeDataProvider(
+    'installedNodeVersions',
+    new InstalledNodeVersionsProvider()
+  );
+  vscode.window.createTreeView('installedNodeVersions', {
+    treeDataProvider: new InstalledNodeVersionsProvider(),
+  });
+
+  vscode.window.registerTreeDataProvider(
+    'availableNodeVersions',
+    new AvailableNodeVersionsProvider()
+  );
+  vscode.window.createTreeView('availableNodeVersions', {
+    treeDataProvider: new AvailableNodeVersionsProvider(),
   });
 
   /** List of registered vscode-nvm commands */
@@ -40,6 +52,9 @@ export function activate(context: vscode.ExtensionContext) {
       );
 
       quickPick.items = nodeVersions.map((version) => ({ label: version }));
+      quickPick.title = 'Install New Node Version';
+      quickPick.placeholder = 'Select node version';
+
       quickPick.onDidChangeSelection(async (selected) => {
         const [item] = selected;
         const { label: version } = item;
@@ -100,6 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       quickPick.items = nodeVersions.map((version) => ({ label: version }));
       quickPick.title = 'Switch Node Version';
+      quickPick.placeholder = 'Select node version';
       quickPick.onDidChangeSelection(async (selected) => {
         const [item] = selected;
         const { label: version } = item;
@@ -115,9 +131,19 @@ export function activate(context: vscode.ExtensionContext) {
                 .switchVersion(version)
                 .then((res) => {
                   if (res) {
-                    vscode.window.showInformationMessage(
-                      `Switched node version to ${version}, Restart vscode for the change to take effect`
-                    );
+                    const action = 'Reload';
+                    vscode.window
+                      .showInformationMessage(
+                        `Switched node version to ${version}. Restart vscode for the change to take effect`,
+                        action
+                      )
+                      .then((selectedAction) => {
+                        if (selectedAction === action) {
+                          vscode.commands.executeCommand(
+                            'workbench.action.reloadWindow'
+                          );
+                        }
+                      });
                     resolve(res);
                   } else {
                     vscode.window.showInformationMessage(
@@ -162,6 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
         label: version,
       }));
       deleteQuickPick.title = 'Delete Node Version';
+      deleteQuickPick.placeholder = 'Select node version';
       deleteQuickPick.onDidChangeSelection(async (selected) => {
         const [item] = selected;
         const { label: version } = item;
@@ -219,6 +246,16 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  // create a new status bar item that we can now manage
+  nvmBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    100
+  );
+  nvmBarItem.command = 'vscode-nvm.showPalette';
+  nvmBarItem.text = 'nvm';
+  nvmBarItem.show();
+  subscriptions.push(nvmBarItem);
+
   subscriptions.push(
     vscode.commands.registerCommand('vscode-nvm.showPalette', () => {
       const options: {
@@ -238,33 +275,27 @@ export function activate(context: vscode.ExtensionContext) {
           command: 'deleteNodeVersion',
         },
       ];
-      vscode.window.showQuickPick(
-        options.map((item) => item.label),
-        {
-          placeHolder: 'Select',
-          onDidSelectItem: (selectedItem) => {
-            const selectedOption = options.find(
-              (item) => item.label === selectedItem
-            );
-            if (selectedOption) {
-              const command = `vscode-nvm.${selectedOption.command}`;
-              vscode.commands.executeCommand(command);
-            }
-          },
+
+      const quickPick = vscode.window.createQuickPick();
+      quickPick.items = options.map((item) => ({
+        label: item.label,
+      }));
+      quickPick.placeholder = 'Select nvm action';
+      quickPick.onDidChangeSelection(async (selected) => {
+        const [selectedItem] = selected;
+        const selectedOption = options.find(
+          (item) => item.label === selectedItem.label
+        );
+        if (selectedOption) {
+          const command = `vscode-nvm.${selectedOption.command}`;
+          quickPick.dispose();
+          vscode.commands.executeCommand(command);
         }
-      );
+      });
+
+      quickPick.show();
     })
   );
-
-  // create a new status bar item that we can now manage
-  nvmBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    100
-  );
-  nvmBarItem.command = 'vscode-nvm.showPalette';
-  nvmBarItem.text = 'nvm - v0.4.5';
-  nvmBarItem.show();
-  subscriptions.push(nvmBarItem);
 }
 
 export function deactivate() {}

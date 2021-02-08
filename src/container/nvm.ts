@@ -8,6 +8,7 @@ const versionPattern = /(v\d\d\.\d\d\.\d)/g;
 const installedVersionPattern = /(v\d+\.\d+\.\d+)|(system)/g;
 
 export class NVM {
+  currentVersion: string = '';
   versions: string[] = [];
   installedVersions: string[] = [];
   githubLink = 'https://github.com/nvm-sh/nvm';
@@ -30,7 +31,7 @@ export class NVM {
           }
         });
     }
-
+    this.currentVersion = await this.fetchCurrentVersion();
     this.versions = await this.fetchAvailableVersions();
     this.installedVersions = await this.fetchInstalledVersions();
   }
@@ -48,16 +49,17 @@ export class NVM {
   }
 
   async fetchAvailableVersions(): Promise<string[]> {
-    if (this.versions.length > 0) {
-      return this.versions;
-    } else {
-      const command = this.nvmCommandBuilder('nvm ls-remote');
-      const { stdout } = await exec(command);
+    const command = this.nvmCommandBuilder('nvm ls-remote');
+    const { stdout } = await exec(command);
 
-      const parsed = stdout.match(versionPattern);
-      this.versions = parsed ?? [];
-      return !!parsed ? parsed : [];
-    }
+    const parsed = stdout.match(versionPattern);
+    const installedVersions = await this.fetchInstalledVersions();
+    const availableVersions = parsed?.filter(
+      (p) => !installedVersions.includes(p)
+    );
+
+    this.versions = availableVersions ?? [];
+    return !!availableVersions ? availableVersions : [];
   }
 
   async installNewVersion(version: string): Promise<boolean> {
@@ -74,21 +76,32 @@ export class NVM {
     return true;
   }
 
-  async fetchInstalledVersions(fetchNew = false): Promise<string[]> {
-    if (this.installedVersions.length > 0 && fetchNew === false) {
-      return this.installedVersions;
-    } else {
-      const command = this.nvmCommandBuilder('nvm ls');
-      const { stdout } = await exec(command);
+  async fetchCurrentVersion(): Promise<string> {
+    const command = this.nvmCommandBuilder('nvm current');
 
-      let parsed = stdout.match(installedVersionPattern);
-      if (parsed) {
-        parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
-      }
+    return new Promise((resolve, reject) => {
+      exec(command)
+        .then((response) => {
+          const { stdout } = response;
+          resolve(stdout);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 
-      this.installedVersions = parsed ?? [];
-      return !!parsed ? parsed : [];
+  async fetchInstalledVersions(): Promise<string[]> {
+    const command = this.nvmCommandBuilder('nvm ls');
+    const { stdout } = await exec(command);
+
+    let parsed = stdout.match(installedVersionPattern);
+    if (parsed) {
+      parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
     }
+
+    this.installedVersions = parsed ?? [];
+    return !!parsed ? parsed : [];
   }
 
   async switchVersion(version: string): Promise<boolean> {
@@ -108,14 +121,15 @@ export class NVM {
     if (!validate) {
       return false;
     }
+    const command = this.nvmCommandBuilder(`nvm uninstall ${version}`);
 
     try {
-      const command = this.nvmCommandBuilder(`nvm uninstall ${version}`);
       await exec(command);
-      return true;
     } catch (e) {
       console.log('There was a problem...');
       return false;
     }
+
+    return true;
   }
 }
