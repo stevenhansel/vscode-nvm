@@ -1,0 +1,163 @@
+{
+  "name": "vscode-nvm",
+  "displayName": "vscode-nvm",
+  "description": "A vscode extension for nvm",
+  "publisher": "stevenhansel",
+  "repository": "https://github.com/ShinteiMai/vscode-nvm",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.52.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*",
+    "onCommand:vscode-nvm.helloWorld",
+    "onView:nvm"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-nvm.addNodeVersion",
+        "title": "Add Node Version",
+        "category": "nvm"
+      },
+      {
+        "command": "vscode-nvm.switchNodeVersion",
+        "title": "Switch Node Version",
+        "category": "nvm"
+      },
+      {
+        "command": "vscode-nvm.deleteNodeVersion",
+        "title": "Delete Node Version",
+        "category": "nvm"
+      },
+      {
+        "command": "vscode-nvm.availableNodeVersions.refreshEntry",
+        "title": "Refresh",
+        "category": "nvm",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.availableNodeVersions.addNodeVersion",
+        "title": "Add/Install",
+        "icon": {
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.refreshEntry",
+        "title": "Refresh",
+        "category": "nvm",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.switchEntry",
+        "title": "Switch",
+        "icon": {
+          "light": "resources/light/dependency.svg",
+          "dark": "resources/dark/dependency.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.deleteEntry",
+        "title": "Delete",
+        "icon": {
+          "light": "resources/light/discard.svg",
+          "dark": "resources/dark/discard.svg"
+        }
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nvm-explorer",
+          "title": "NVM Explorer",
+          "icon": "resources/node.svg"
+        }
+      ],
+      "panel": [
+        {
+          "id": "nvm-explorer",
+          "title": "NVM Explorer",
+          "icon": "resources/node.svg"
+        }
+      ]
+    },
+    "views": {
+      "nvm-explorer": [
+        {
+          "id": "installedNodeVersions",
+          "name": "installed node versions",
+          "contextualTitle": "Installed Node Versions"
+        },
+        {
+          "id": "availableNodeVersions",
+          "name": "available node versions",
+          "contextualTitle": "Available Node Versions"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "vscode-nvm.availableNodeVersions.refreshEntry",
+          "when": "view == availableNodeVersions",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-nvm.installedNodeVersions.refreshEntry",
+          "when": "view == installedNodeVersions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-nvm.installedNodeVersions.switchEntry",
+          "when": "view == installedNodeVersions && viewItem == installedVersionNode",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-nvm.installedNodeVersions.deleteEntry",
+          "when": "view == installedNodeVersions && viewItem == installedVersionNode",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-nvm.availableNodeVersions.addNodeVersion",
+          "when": "view == availableNodeVersions && viewItem == availableVersionNode",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.52.0",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^12.11.7",
+    "eslint": "^7.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "glob": "^7.1.6",
+    "mocha": "^8.2.1",
+    "typescript": "^4.1.3",
+    "vscode-test": "^1.5.0"
+  }
+}
