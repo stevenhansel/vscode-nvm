@@ -2,6 +2,8 @@
   "name": "vscode-nvm",
   "displayName": "vscode-nvm",
   "description": "A vscode extension for nvm",
+  "publisher": "stevenhansel",
+  "repository": "https://github.com/ShinteiMai/vscode-nvm",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.52.0"

@@ -44,14 +44,15 @@ export function activate(context: vscode.ExtensionContext) {
     'vscode-nvm.installedNodeVersions.switchEntry',
     async (node: InstalledVersionNode) => {
       const version = node.label.trim();
-      await nvmController.fetchAllVersions();
+
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
           title: `Switching to node ${version}...`,
           cancellable: true,
         },
-        () => {
+        async () => {
+          await nvmController.fetchAllVersions();
           return nvmController.switchNodeVersion(version, () => {
             refreshTreeView();
           });
@@ -63,14 +64,15 @@ export function activate(context: vscode.ExtensionContext) {
     'vscode-nvm.installedNodeVersions.deleteEntry',
     async (node: InstalledVersionNode) => {
       const version = node.label;
-      await nvmController.fetchAllVersions();
+
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
           title: `Deleting node ${version}...`,
           cancellable: true,
         },
-        () => {
+        async () => {
+          await nvmController.fetchAllVersions();
           return nvmController.deleteNodeVersion(version, () => {
             refreshTreeView();
           });
@@ -96,14 +98,15 @@ export function activate(context: vscode.ExtensionContext) {
     'vscode-nvm.availableNodeVersions.addNodeVersion',
     async (node: AvailableVersionNode) => {
       const version = node.label;
-      await nvmController.fetchAllVersions();
+
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
           title: `Installing node ${version}`,
           cancellable: true,
         },
-        () => {
+        async () => {
+          await nvmController.fetchAllVersions();
           return nvmController.addVersion(version, () => {
             refreshTreeView();
           });
