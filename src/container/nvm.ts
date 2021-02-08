@@ -77,18 +77,9 @@ export class NVM {
   }
 
   async fetchCurrentVersion(): Promise<string> {
-    const command = this.nvmCommandBuilder('nvm current');
-
-    return new Promise((resolve, reject) => {
-      exec(command)
-        .then((response) => {
-          const { stdout } = response;
-          resolve(stdout);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
+    const command = this.nvmCommandBuilder(`nvm current`);
+    const { stdout } = await exec(command);
+    return stdout;
   }
 
   async fetchInstalledVersions(): Promise<string[]> {
@@ -100,7 +91,7 @@ export class NVM {
       parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
     }
 
-    this.installedVersions = parsed ?? [];
+    this.installedVersions = parsed?.map((p) => p.trim()) ?? [];
     return !!parsed ? parsed : [];
   }
 

@@ -20,17 +20,59 @@
       {
         "command": "vscode-nvm.addNodeVersion",
         "title": "Add Node Version",
-        "category": "VSCODE-NVM"
+        "category": "nvm"
       },
       {
         "command": "vscode-nvm.switchNodeVersion",
         "title": "Switch Node Version",
-        "category": "VSCODE-NVM"
+        "category": "nvm"
       },
       {
         "command": "vscode-nvm.deleteNodeVersion",
         "title": "Delete Node Version",
-        "category": "VSCODE-NVM"
+        "category": "nvm"
+      },
+      {
+        "command": "vscode-nvm.availableNodeVersions.refreshEntry",
+        "title": "Refresh",
+        "category": "nvm",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.availableNodeVersions.addNodeVersion",
+        "title": "Add/Install",
+        "icon": {
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.refreshEntry",
+        "title": "Refresh",
+        "category": "nvm",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.switchEntry",
+        "title": "Switch",
+        "icon": {
+          "light": "resources/light/dependency.svg",
+          "dark": "resources/dark/dependency.svg"
+        }
+      },
+      {
+        "command": "vscode-nvm.installedNodeVersions.deleteEntry",
+        "title": "Delete",
+        "icon": {
+          "light": "resources/light/discard.svg",
+          "dark": "resources/dark/discard.svg"
+        }
       }
     ],
     "viewsContainers": {
@@ -60,6 +102,37 @@
           "id": "availableNodeVersions",
           "name": "available node versions",
           "contextualTitle": "Available Node Versions"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "vscode-nvm.availableNodeVersions.refreshEntry",
+          "when": "view == availableNodeVersions",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-nvm.installedNodeVersions.refreshEntry",
+          "when": "view == installedNodeVersions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-nvm.installedNodeVersions.switchEntry",
+          "when": "view == installedNodeVersions && viewItem == installedVersionNode",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-nvm.installedNodeVersions.deleteEntry",
+          "when": "view == installedNodeVersions && viewItem == installedVersionNode",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-nvm.availableNodeVersions.addNodeVersion",
+          "when": "view == availableNodeVersions && viewItem == availableVersionNode",
+          "group": "inline"
         }
       ]
     }
