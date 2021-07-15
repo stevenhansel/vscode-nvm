@@ -1,11 +1,17 @@
 import { promisify } from 'util';
 import * as child from 'child_process';
 import * as vscode from 'vscode';
+import * as os from 'os';
 
 const exec = promisify(child.exec);
 
 const versionPattern = /(v\d\d\.\d\d\.\d)/g;
 const installedVersionPattern = /(v\d+\.\d+\.\d+)|(system)/g;
+
+const windowsVersionPattern = /(\d|\.)+/g;
+const windowsCurrentVersionPattern = /\* (\d+.)+/g;
+const windowsInstalledVersionPattern = /(\d+\.\d+\.\d+)/g;
+const isWindows = os.platform() === 'win32';
 
 export class NVM {
   currentVersion: string = '';
@@ -36,23 +42,54 @@ export class NVM {
     this.installedVersions = await this.fetchInstalledVersions();
   }
 
-  nvmCommandBuilder = (command: string): string =>
-    `source ~/.nvm/nvm.sh && ${command}`;
+  nvmCommandBuilder = (command: string): string => {
+    if (isWindows) {
+      command = command.replace('nvm', '').trimStart();
+      return `"%appdata%\\nvm\\nvm.exe" ${command}`;
+    }
+    return `source ~/.nvm/nvm.sh && ${command}`;
+  };
 
   async isNvmInstalled(): Promise<boolean> {
     const command = this.nvmCommandBuilder('nvm');
     return new Promise((resolve) => {
-      exec(command)
+      if(isWindows) {
+        exec(command, {shell: 'cmd'})
         .then(() => resolve(true))
         .catch(() => resolve(false));
+      } 
+      else {
+        exec(command)
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+      }
     });
   }
 
   async fetchAvailableVersions(): Promise<string[]> {
-    const command = this.nvmCommandBuilder('nvm ls-remote');
+    let command;
+    if (isWindows) {
+      command = this.nvmCommandBuilder('nvm list available');
+    } else { 
+      command = this.nvmCommandBuilder('nvm ls-remote');
+    }
     const { stdout } = await exec(command);
 
-    const parsed = stdout.match(versionPattern);
+    let parsed;
+    if(isWindows) {
+      parsed = stdout.match(windowsVersionPattern)?.sort((a, b) => {
+        return parseInt(b.split('.')[0]) - parseInt(a.split('.')[0]);
+      }).filter(i => {
+        const versionParts = i.split('.').map(part => parseInt(part));
+        if((versionParts[0] === 0 && versionParts[1] === 9 || versionParts[1] === 11) || versionParts.length < 3){
+          return false;
+        } else {
+          return true;
+        }
+      });
+    } else {
+      parsed = stdout.match(versionPattern);
+    }
     const installedVersions = await this.fetchInstalledVersions();
     const availableVersions = parsed?.filter(
       (p) => !installedVersions.includes(p)
@@ -77,18 +114,33 @@ export class NVM {
   }
 
   async fetchCurrentVersion(): Promise<string> {
-    const command = this.nvmCommandBuilder(`nvm current`);
-    const { stdout } = await exec(command);
-    return stdout;
+    let command;
+    if(isWindows) {
+      command = this.nvmCommandBuilder(`nvm list`);
+      const { stdout } = await exec(command);
+      const parsed = stdout.match(windowsCurrentVersionPattern)?.[0].split('*')[1].trim() || '';
+      return parsed;
+    } else {
+      command = this.nvmCommandBuilder(`nvm current`);
+      const { stdout } = await exec(command);
+      return stdout;
+    }
   }
 
   async fetchInstalledVersions(): Promise<string[]> {
     const command = this.nvmCommandBuilder('nvm ls');
+    vscode.window.showInformationMessage(
+      'attempting command:' + command);
     const { stdout } = await exec(command);
 
-    let parsed = stdout.match(installedVersionPattern);
-    if (parsed) {
-      parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
+    let parsed;
+    if(isWindows) {
+      parsed = stdout.match(windowsInstalledVersionPattern);
+    } else {
+      parsed = stdout.match(installedVersionPattern);
+      if (parsed) {
+        parsed.splice(parsed.indexOf('system'), Number.MAX_VALUE);
+      }
     }
 
     this.installedVersions = parsed?.map((p) => p.trim()) ?? [];
@@ -101,7 +153,9 @@ export class NVM {
       return false;
     }
 
-    const command = this.nvmCommandBuilder(`nvm alias default ${version}`);
+    let command;
+    if(isWindows) { command = this.nvmCommandBuilder(`nvm use ${version}`); }
+    else {command = this.nvmCommandBuilder(`nvm alias default ${version}`); } 
     await exec(command);
     return true;
   }
