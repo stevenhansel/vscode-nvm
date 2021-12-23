@@ -37,7 +37,7 @@ export class NVM {
   }
 
   nvmCommandBuilder = (command: string): string =>
-    `source ~/.nvm/nvm.sh && ${command}`;
+    `. ~/.nvm/nvm.sh && ${command}`;
 
   async isNvmInstalled(): Promise<boolean> {
     const command = this.nvmCommandBuilder('nvm');
